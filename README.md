@@ -16,7 +16,7 @@ powiązane, ale nie zawierają gotowych rozwiązań ani zadań do wykonania wcze
 
 | Pole | Wartość |
 |---|---|
-| Zespół i integrator Sprintu 1 | TODO |
+| Zespół i integrator Sprintu 1 | Patryk Ostrowski - s26782, Wojciech Pyrzanowski -s22519, Filip Borkowski - s30509  |
 | Dataset (id z `docs/datasets.md`) | TODO |
 | Źródło, licencja i cytowanie (DOI) | TODO |
 | Data pobrania danych | TODO |

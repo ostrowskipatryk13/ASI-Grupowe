@@ -16,15 +16,15 @@ powiązane, ale nie zawierają gotowych rozwiązań ani zadań do wykonania wcze
 
 | Pole | Wartość |
 |---|---|
-| Zespół i integrator Sprintu 1 | Patryk Ostrowski - s26782, Wojciech Pyrzanowski -s22519, Filip Borkowski - s30509  |
-| Dataset (id z `docs/datasets.md`) | TODO |
-| Źródło, licencja i cytowanie (DOI) | TODO |
-| Data pobrania danych | TODO |
-| SHA-256 pliku danych (`fingerprint.json`) | TODO |
-| Dane osobowe w zbiorze i sposób postępowania | TODO |
-| Target i klasa pozytywna | TODO |
-| Metryka główna i uzasadnienie | TODO |
-| Użytkownik systemu i decyzja, którą wspiera model | TODO |
+| Zespół i integrator Sprintu 1 | Patryk Ostrowski - s26782 Integrator, Wojciech Pyrzanowski -s22519, Filip Borkowski - s30509  |
+| Dataset (id z `docs/datasets.md`) | iranian_churn |
+| Źródło, licencja i cytowanie (DOI) |  UCI Machine Learning Repository, https://archive.ics.uci.edu/dataset/563/iranian+churn+dataset, DOI https://doi.org/10.24432/C5JW3Z. |
+| Data pobrania danych | 28.10.2026 |
+| SHA-256 pliku danych (`fingerprint.json`) | 90D5FB6BD1630CD4DE4B4D28FCF8B4CB92A8F6AB7484605B0799D47386F7DBE1|
+| Dane osobowe w zbiorze i sposób postępowania | Age |
+| Target i klasa pozytywna | Churn |
+| Metryka główna i uzasadnienie | F1, ponieważ jest niezbalansowana klasa  |
+| Użytkownik systemu i decyzja, którą wspiera model | Operator. Czy klient operatora odejdzie. |
 <!-- KARTA-PROJEKTU:END -->
 
 ## Mapa projektu

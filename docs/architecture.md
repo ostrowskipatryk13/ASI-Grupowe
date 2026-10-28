@@ -47,11 +47,37 @@ gotowy — sprawdza to `python scripts/check_dod.py`.
 
 <!-- DIAGRAM-V0:START -->
 ```mermaid
-flowchart LR
-    data["TODO: źródło danych"] --> model["TODO: kolejne elementy systemu"]
+flowchart TD
+    subgraph S1 [Sprint 1: Dane i Kontrakt - Istnieje]
+        RawData[(Surowe Dane / CSV)] --> Contract[Kontrakt Danych & Dataset Schema]
+        Contract --> InpNorm[Input Normalization]
+        Contract --> TrainFilter[Training-only Filtering]
+    end
+
+    subgraph S2_S3 [Sprint 2 & 3: Pipeline i Model - Planowane]
+        InpNorm --> ModelPrep[Model Preprocessing]
+        TrainFilter --> ModelPrep
+        ModelPrep --> TrainPipeline[Pipeline Treningowy / Kedro]
+        TrainPipeline --> ModelArtifact[(Artefakt Modelu / W&B)]
+    end
+
+    subgraph S4_S5 [Sprint 4 & 5: Serving, API i UI - Planowane]
+        ModelArtifact --> API[FastAPI Service]
+        Client[Użytkownik / UI] -->|HTTP Request| API
+        API -->|Predykcja| Client
+    end
+
+    subgraph Persistence [Stan i Zapis - Planowane]
+        API -->|Zapis predykcji| DB[(PostgreSQL / Persistence)]
+    end
+
+    style S1 fill:#d4edda,stroke:#28a745,stroke-width:2px
+    style S2_S3 fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style S4_S5 fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    style Persistence fill:#e2e3e5,stroke:#6c757d,stroke-width:2px
 ```
 
-TODO: krótki opis diagramu (3–5 zdań).
+Diagram przedstawia docelowy, wielowarstwowy przepływ danych i komponentów systemu w wersji v0. Po Sprincie 1 wdrożono kluczowe reguły kontraktu, normalizacji oraz filtrowania danych wejściowych. W kolejnych etapach projekt zostanie rozbudowany o automatyczny pipeline treningowy, rejestr modeli oraz warstwę serwowania opartą na REST API i interfejsie użytkownika. Całość domyka wydzielona warstwa trwałości stanu służąca do zapisu predykcji.
 <!-- DIAGRAM-V0:END -->
 
 ## Historia zmian architektury

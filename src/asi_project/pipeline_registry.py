@@ -1,0 +1,10 @@
+
+"""Rejestr pipeline'ów Kedro."""
+
+from kedro.pipeline import Pipeline
+
+
+def register_pipelines() -> dict[str, Pipeline]:
+    return {
+        "__default__": Pipeline([]),
+    }

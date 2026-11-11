@@ -6,9 +6,14 @@ from .nodes import evaluate_model, split_data, train_model
 def create_pipeline() -> Pipeline:
     return Pipeline(
         [
+            
             node(
                 func=split_data,
-                inputs="prepared_data",
+                inputs=[
+                    "prepared_data",
+                    "params:test_size",
+                    "params:random_state",
+                ],
                 outputs=[
                     "X_train",
                     "X_test",

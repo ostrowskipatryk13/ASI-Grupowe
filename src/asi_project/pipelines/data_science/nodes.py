@@ -9,7 +9,10 @@ from asi_project.model import build_baseline_pipeline
 
 def split_data(
     prepared_data: pd.DataFrame,
+    test_size: float,
+    random_state: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    """Dzieli dane zgodnie z kontraktem i parametrami Kedro."""
     config = load_project_config()
     contract = get_contract(config)
 
@@ -23,8 +26,8 @@ def split_data(
         X,
         y,
         contract,
-        test_size=config.test_size,
-        random_state=config.random_state,
+        test_size=test_size,
+        random_state=random_state,
     )
 
 

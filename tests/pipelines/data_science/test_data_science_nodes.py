@@ -17,10 +17,10 @@ def test_split_data():
     prepared = filter_training_rows(normalize_input(raw_data), contract)
 
     X_train, X_test, y_train, y_test = split_data(
-    prepared,
-    test_size=0.2,
-    random_state=42,
-)
+        prepared,
+        test_size=0.2,
+        random_state=42,
+    )
 
     assert len(X_train) + len(X_test) == len(prepared)
     assert len(X_train) == len(y_train)
@@ -37,10 +37,10 @@ def test_train_and_evaluate_model():
     prepared = filter_training_rows(normalize_input(raw_data), contract)
 
     X_train, X_test, y_train, y_test = split_data(
-    prepared,
-    test_size=0.2,
-    random_state=42,
-)
+        prepared,
+        test_size=0.2,
+        random_state=42,
+    )
     model = train_model(X_train, y_train)
 
     assert isinstance(model, Pipeline)

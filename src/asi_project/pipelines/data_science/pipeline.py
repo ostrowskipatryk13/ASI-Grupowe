@@ -6,7 +6,6 @@ from .nodes import evaluate_model, split_data, train_model
 def create_pipeline() -> Pipeline:
     return Pipeline(
         [
-            
             node(
                 func=split_data,
                 inputs=[

@@ -7,7 +7,6 @@ from asi_project.metrics import compute_metrics
 from asi_project.model import build_baseline_pipeline
 
 
-
 def split_data(
     prepared_data: pd.DataFrame,
     test_size: float,
@@ -30,7 +29,6 @@ def split_data(
         test_size=test_size,
         random_state=random_state,
     )
-
 
 
 def train_model(

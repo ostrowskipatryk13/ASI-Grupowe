@@ -4,6 +4,7 @@ from asi_project.config import get_contract, load_project_config
 from asi_project.data import (
     assert_valid,
     filter_training_rows,
+    normalize_column_names,
     normalize_input,
 )
 
@@ -12,9 +13,10 @@ def validate_data(raw_data: pd.DataFrame) -> pd.DataFrame:
     config = load_project_config()
     contract = get_contract(config)
 
-    assert_valid(raw_data, contract, config)
+    df = normalize_column_names(raw_data)
+    assert_valid(df, contract, config)
 
-    return raw_data
+    return df
 
 
 def normalize_data(validated_data: pd.DataFrame) -> pd.DataFrame:

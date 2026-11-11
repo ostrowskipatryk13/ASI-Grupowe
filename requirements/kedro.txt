@@ -1,0 +1,4 @@
+# Sprint 2: Kedro + klasy ...Dataset używane w conf/*/catalog.yml
+#   python -m pip install -r requirements/kedro.txt -c constraints.txt
+-r preflight-s2.txt
+kedro-datasets[pandas-csvdataset,pickle-pickledataset,json-jsondataset]==10.0.0

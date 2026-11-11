@@ -1,4 +1,3 @@
-
 """Rejestr pipeline'ów Kedro."""
 
 from kedro.pipeline import Pipeline

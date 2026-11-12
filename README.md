@@ -88,6 +88,27 @@ Najważniejsze pliki Sprintu 1:
 | `docs/architecture.md` | zespół | diagram v0 systemu docelowego |
 | `src/asi_project/datasets.yaml` | prowadząca | kontrakt datasetów — nie edytujemy |
 
+## Start Sprintu 2:
+```bash
+git clone https://github.com/ostrowskipatryk13/ASI-Grupowe.git
+cd ASI-Grupowe
+conda env update -n asi-ml -f environment.yml --prune
+conda activate asi-ml
+python -m pip install --no-deps -e .
+python -m pip install -r requirements/kedro.txt -c constraints.txt
+kedro info
+```
+
+## Dane:
+
+Skrypt pobiera Iranian Churn z UCI do data/01_raw/iranian_churn/Customer Churn.csv i zapisuje obok fingerprint.json. SHA-256 z tego pliku ma być równy wartości w karcie projektu. Próbka CI data/01_raw/sample.csv jest już w repozytorium.
+
+## Uruchomienie:
+
+```bash
+kedro run
+```
+
 ## Gałęzie, Pull Requesty i review
 
 - Gałąź `main` jest chroniona. Każda zmiana trafia przez gałąź i Pull Request.

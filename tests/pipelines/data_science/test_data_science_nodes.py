@@ -44,6 +44,7 @@ def test_train_and_evaluate_model():
     model = train_model(X_train, y_train)
 
     assert isinstance(model, Pipeline)
+    assert "preprocessor" in model.named_steps
 
     metrics = evaluate_model(model, X_test, y_test)
 

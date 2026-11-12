@@ -12,7 +12,6 @@ def split_data(
     test_size: float,
     random_state: int,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-    """Dzieli dane zgodnie z kontraktem i parametrami Kedro."""
     config = load_project_config()
     contract = get_contract(config)
 

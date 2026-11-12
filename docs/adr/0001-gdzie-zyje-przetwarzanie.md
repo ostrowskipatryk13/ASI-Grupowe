@@ -3,7 +3,7 @@
 - **Status:** proponowany
 - **Sprint:** S2
 - **Autor:** Patryk Ostrowski
-- **Recenzent:** imię i nazwisko (inna osoba niż autor)
+- **Recenzent:** Wojciech Pyrzanowski 
 
 ## Kontekst
 

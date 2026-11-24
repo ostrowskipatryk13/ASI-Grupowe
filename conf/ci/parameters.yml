@@ -1,0 +1,25 @@
+# Środowisko ci: AutoGluon z bardzo krótkim limitem i jednym szybkim modelem
+
+wandb:
+  project: asi-iranian-churn
+  entity: null
+  fingerprint_file: data/01_raw/sample.csv
+
+autogluon:
+  label: Churn
+  eval_metric: f1
+  excluded_model_types: [XGB, NN_TORCH, FASTAI]
+  models_dir: data/06_models/autogluon_ci
+  experiments:
+    ag_fast:
+      name: ag_fast
+      presets: medium_quality
+      time_limit: 10
+      hyperparameters:
+        GBM: {}
+    ag_quality:
+      name: ag_quality
+      presets: medium_quality
+      time_limit: 10
+      hyperparameters:
+        GBM: {}

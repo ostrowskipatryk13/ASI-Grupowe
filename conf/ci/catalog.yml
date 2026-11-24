@@ -19,3 +19,10 @@ model_metrics:
   filepath: data/08_reporting/metrics_ci.json
   save_args:
     indent: 2
+
+
+model_comparison:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/model_comparison_ci.csv
+  save_args:
+    index: false

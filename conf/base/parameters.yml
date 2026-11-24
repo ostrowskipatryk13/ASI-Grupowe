@@ -3,3 +3,26 @@
 
 test_size: 0.2
 random_state: 42
+
+
+# Sprint 3: tracking eksperymentów w W&B
+wandb:
+  project: asi-iranian-churn
+  entity: filipborek-pjatk
+  fingerprint_file: data/01_raw/iranian_churn/fingerprint.json
+
+# Sprint 3: eksperymenty AutoGluona
+autogluon:
+  label: Churn
+  eval_metric: f1
+  excluded_model_types: [XGB, NN_TORCH, FASTAI]
+  models_dir: data/06_models/autogluon
+  experiments:
+    ag_fast:
+      name: ag_fast
+      presets: medium_quality
+      time_limit: 60
+    ag_quality:
+      name: ag_quality
+      presets: good_quality
+      time_limit: 180

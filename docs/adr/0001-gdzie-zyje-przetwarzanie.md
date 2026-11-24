@@ -3,7 +3,7 @@
 - **Status:** proponowany
 - **Sprint:** S2
 - **Autor:** Patryk Ostrowski
-- **Recenzent:** Wojciech Pyrzanowski 
+- **Recenzent:** Wojciech Pyrzanowski
 
 ## Kontekst
 

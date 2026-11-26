@@ -1,4 +1,3 @@
-import pickle
 import shutil
 import tempfile
 from pathlib import Path
@@ -8,9 +7,10 @@ from sklearn.pipeline import Pipeline
 
 from asi_project.config import get_contract, load_project_config
 from asi_project.data import make_xy, split_train_test
-from asi_project.experiments import log_wandb_run, measure_model
+from asi_project.experiments import data_fingerprint, git_sha, log_wandb_run, measure_model
 from asi_project.metrics import compute_metrics
 from asi_project.model import build_baseline_pipeline
+from asi_project.model_package import load_model, read_metadata, save_model, save_model_package
 
 
 def split_data(
@@ -66,12 +66,11 @@ def evaluate_model(
 
 
 def measure_baseline(trained_model: Pipeline, X_test: pd.DataFrame) -> dict:
-    """Pomiary baseline'u na kopii zapisanej jako pickle (tak jak trafia na dysk)."""
+    """Pomiary baseline'u na kopii zapisanej przez save_model (tak jak trafia na dysk)."""
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "model.pkl"
-        with open(path, "wb") as handle:
-            pickle.dump(trained_model, handle)
-        return measure_model("pickle", path, X_test)
+        save_model(trained_model, "sklearn", path)
+        return measure_model("sklearn", path, X_test)
 
 
 def log_baseline_run(
@@ -128,9 +127,7 @@ def train_autogluon(
 
 def evaluate_autogluon(model_path: str, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
     """Te same metryki co dla baseline'u, liczone na tym samym zbiorze testowym."""
-    from autogluon.tabular import TabularPredictor
-
-    predictor = TabularPredictor.load(model_path)
+    predictor = load_model("autogluon", model_path)
     predictions = predictor.predict(X_test)
     return compute_metrics(y_test, predictions.astype(int))
 
@@ -187,4 +184,64 @@ def log_comparison_table(model_comparison: pd.DataFrame, wandb_config: dict) -> 
         reinit="finish_previous",
     )
     run.log({"model_comparison": wandb.Table(dataframe=model_comparison)})
+    run.finish()
+
+
+def build_model_package(
+    model_path: str,
+    metrics: dict,
+    measurements: dict,
+    experiment: dict,
+    wandb_config: dict,
+    package_params: dict,
+) -> str:
+    config = load_project_config()
+    contract = get_contract(config)
+    metadata = {
+        "model_name": experiment["name"],
+        "features": list(config.model_features),
+        "target": contract.target,
+        "positive_class": contract.positive_class,
+        "metrics": metrics,
+        "measurements": measurements,
+        "training_params": {
+            "presets": experiment["presets"],
+            "time_limit": experiment["time_limit"],
+        },
+        "git_sha": git_sha(),
+        "data_fingerprint": data_fingerprint(wandb_config["fingerprint_file"]),
+    }
+    package_dir = save_model_package(
+        model_path, package_params["output_dir"], "autogluon", metadata
+    )
+    return str(package_dir)
+
+
+def log_model_package_artifact(
+    model_package_path: str,
+    wandb_config: dict,
+    package_params: dict,
+) -> None:
+    import wandb
+
+    metadata = read_metadata(model_package_path)
+    run = wandb.init(
+        project=wandb_config["project"],
+        entity=wandb_config.get("entity"),
+        name="model_package",
+        job_type="model_package",
+        config={
+            "model_name": metadata["model_name"],
+            "git_sha": metadata["git_sha"],
+            "data_fingerprint": metadata["data_fingerprint"],
+        },
+        reinit="finish_previous",
+    )
+    artifact = wandb.Artifact(
+        name=package_params["artifact_name"],
+        type="model",
+        metadata=metadata,
+    )
+    artifact.add_dir(model_package_path)
+    run.log_artifact(artifact, aliases=list(package_params["aliases"]))
     run.finish()

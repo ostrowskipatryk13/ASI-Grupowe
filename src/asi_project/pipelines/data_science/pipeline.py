@@ -2,11 +2,13 @@ from kedro.pipeline import Pipeline, node
 
 from .nodes import (
     build_comparison_table,
+    build_model_package,
     evaluate_autogluon,
     evaluate_model,
     log_autogluon_run,
     log_baseline_run,
     log_comparison_table,
+    log_model_package_artifact,
     measure_autogluon,
     measure_baseline,
     split_data,
@@ -16,6 +18,7 @@ from .nodes import (
 
 # Nazwy konfiguracji AutoGluona — muszą istnieć w parameters.yml
 AUTOGLUON_EXPERIMENTS = ("ag_fast", "ag_quality")
+PRODUCTION_MODEL = "ag_fast"
 
 
 def _autogluon_nodes(name: str) -> list:
@@ -127,4 +130,26 @@ def create_pipeline() -> Pipeline:
         ),
     ]
 
-    return Pipeline(baseline_nodes + autogluon_nodes + comparison_nodes)
+    package_nodes = [
+        node(
+            func=build_model_package,
+            inputs=[
+                f"{PRODUCTION_MODEL}_model_path",
+                f"{PRODUCTION_MODEL}_metrics",
+                f"{PRODUCTION_MODEL}_measurements",
+                f"params:autogluon.experiments.{PRODUCTION_MODEL}",
+                "params:wandb",
+                "params:model_package",
+            ],
+            outputs="model_package_path",
+            name="build_model_package_node",
+        ),
+        node(
+            func=log_model_package_artifact,
+            inputs=["model_package_path", "params:wandb", "params:model_package"],
+            outputs=None,
+            name="log_model_package_artifact_node",
+        ),
+    ]
+
+    return Pipeline(baseline_nodes + autogluon_nodes + comparison_nodes + package_nodes)

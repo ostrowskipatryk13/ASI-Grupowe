@@ -1,4 +1,3 @@
-import pickle
 import shutil
 import tempfile
 from pathlib import Path
@@ -11,7 +10,7 @@ from asi_project.data import make_xy, split_train_test
 from asi_project.experiments import data_fingerprint, git_sha, log_wandb_run, measure_model
 from asi_project.metrics import compute_metrics
 from asi_project.model import build_baseline_pipeline
-from asi_project.model_package import save_model_package
+from asi_project.model_package import load_model, save_model, save_model_package
 
 
 def split_data(
@@ -67,12 +66,11 @@ def evaluate_model(
 
 
 def measure_baseline(trained_model: Pipeline, X_test: pd.DataFrame) -> dict:
-    """Pomiary baseline'u na kopii zapisanej jako pickle (tak jak trafia na dysk)."""
+    """Pomiary baseline'u na kopii zapisanej przez save_model (tak jak trafia na dysk)."""
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "model.pkl"
-        with open(path, "wb") as handle:
-            pickle.dump(trained_model, handle)
-        return measure_model("pickle", path, X_test)
+        save_model(trained_model, "sklearn", path)
+        return measure_model("sklearn", path, X_test)
 
 
 def log_baseline_run(
@@ -129,9 +127,7 @@ def train_autogluon(
 
 def evaluate_autogluon(model_path: str, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
     """Te same metryki co dla baseline'u, liczone na tym samym zbiorze testowym."""
-    from autogluon.tabular import TabularPredictor
-
-    predictor = TabularPredictor.load(model_path)
+    predictor = load_model("autogluon", model_path)
     predictions = predictor.predict(X_test)
     return compute_metrics(y_test, predictions.astype(int))
 

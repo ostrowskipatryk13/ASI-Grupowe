@@ -2,7 +2,6 @@
 
 import hashlib
 import json
-import pickle
 import statistics
 import subprocess
 import sys
@@ -12,6 +11,8 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+from asi_project.model_package import load_model
 
 
 def git_sha() -> str:
@@ -52,9 +53,10 @@ def directory_size_bytes(path: str | Path) -> int:
 # Skrypt uruchamiany w osobnym, czystym procesie: mierzy pamięć potrzebną do wczytania
 # modelu i wykonania pierwszej predykcji (AutoGluon wczytuje modele leniwie, przy predict).
 _MEMORY_SCRIPT = """
-import pickle, sys
+import sys
 import pandas as pd
 import psutil
+from asi_project.model_package import load_model
 kind, model_path, sample_path = sys.argv[1:4]
 X = pd.read_pickle(sample_path)
 if kind == "autogluon":
@@ -63,24 +65,10 @@ else:
     import sklearn.pipeline
 process = psutil.Process()
 before = process.memory_info().rss
-if kind == "autogluon":
-    model = TabularPredictor.load(model_path)
-else:
-    with open(model_path, "rb") as handle:
-        model = pickle.load(handle)
+model = load_model(kind, model_path)
 model.predict(X)
 print((process.memory_info().rss - before) / 1_000_000)
 """
-
-
-def load_model(kind: str, path: str | Path) -> Any:
-    """Wczytuje model zapisany jako pickle (sklearn) albo katalog AutoGluona."""
-    if kind == "autogluon":
-        from autogluon.tabular import TabularPredictor
-
-        return TabularPredictor.load(str(path))
-    with open(path, "rb") as handle:
-        return pickle.load(handle)
 
 
 def measure_load_memory_mb(kind: str, path: str | Path, X: pd.DataFrame) -> float:

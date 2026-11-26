@@ -23,3 +23,6 @@ autogluon:
       time_limit: 10
       hyperparameters:
         GBM: {}
+
+model_package:
+  output_dir: data/06_models/production_ci

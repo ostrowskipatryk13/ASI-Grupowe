@@ -8,9 +8,10 @@ from sklearn.pipeline import Pipeline
 
 from asi_project.config import get_contract, load_project_config
 from asi_project.data import make_xy, split_train_test
-from asi_project.experiments import log_wandb_run, measure_model
+from asi_project.experiments import data_fingerprint, git_sha, log_wandb_run, measure_model
 from asi_project.metrics import compute_metrics
 from asi_project.model import build_baseline_pipeline
+from asi_project.model_package import save_model_package
 
 
 def split_data(
@@ -188,3 +189,33 @@ def log_comparison_table(model_comparison: pd.DataFrame, wandb_config: dict) -> 
     )
     run.log({"model_comparison": wandb.Table(dataframe=model_comparison)})
     run.finish()
+
+
+def build_model_package(
+    model_path: str,
+    metrics: dict,
+    measurements: dict,
+    experiment: dict,
+    wandb_config: dict,
+    package_params: dict,
+) -> str:
+    config = load_project_config()
+    contract = get_contract(config)
+    metadata = {
+        "model_name": experiment["name"],
+        "features": list(config.model_features),
+        "target": contract.target,
+        "positive_class": contract.positive_class,
+        "metrics": metrics,
+        "measurements": measurements,
+        "training_params": {
+            "presets": experiment["presets"],
+            "time_limit": experiment["time_limit"],
+        },
+        "git_sha": git_sha(),
+        "data_fingerprint": data_fingerprint(wandb_config["fingerprint_file"]),
+    }
+    package_dir = save_model_package(
+        model_path, package_params["output_dir"], "autogluon", metadata
+    )
+    return str(package_dir)

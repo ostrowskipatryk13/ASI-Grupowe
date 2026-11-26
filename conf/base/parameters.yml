@@ -26,3 +26,7 @@ autogluon:
       name: ag_quality
       presets: good_quality
       time_limit: 180
+
+# Sprint 3: pakiet modelu produkcyjnego
+model_package:
+  output_dir: data/06_models/production

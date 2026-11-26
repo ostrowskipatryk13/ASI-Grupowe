@@ -36,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--download-dir", default="data/06_models/smoke")
     args = parser.parse_args(argv)
 
-    import wandb  # import lokalny: skrypty nie importują W&B na poziomie modułu
+    import wandb
 
     path = artifact_path(args.alias)
     artifact = wandb.Api().artifact(path)

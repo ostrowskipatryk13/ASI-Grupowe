@@ -8,6 +8,7 @@ from .nodes import (
     log_autogluon_run,
     log_baseline_run,
     log_comparison_table,
+    log_model_package_artifact,
     measure_autogluon,
     measure_baseline,
     split_data,
@@ -142,6 +143,12 @@ def create_pipeline() -> Pipeline:
             ],
             outputs="model_package_path",
             name="build_model_package_node",
+        ),
+        node(
+            func=log_model_package_artifact,
+            inputs=["model_package_path", "params:wandb", "params:model_package"],
+            outputs=None,
+            name="log_model_package_artifact_node",
         ),
     ]
 

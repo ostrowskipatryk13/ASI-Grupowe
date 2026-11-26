@@ -10,7 +10,7 @@ from asi_project.data import make_xy, split_train_test
 from asi_project.experiments import data_fingerprint, git_sha, log_wandb_run, measure_model
 from asi_project.metrics import compute_metrics
 from asi_project.model import build_baseline_pipeline
-from asi_project.model_package import load_model, save_model, save_model_package
+from asi_project.model_package import load_model, read_metadata, save_model, save_model_package
 
 
 def split_data(
@@ -215,3 +215,33 @@ def build_model_package(
         model_path, package_params["output_dir"], "autogluon", metadata
     )
     return str(package_dir)
+
+
+def log_model_package_artifact(
+    model_package_path: str,
+    wandb_config: dict,
+    package_params: dict,
+) -> None:
+    import wandb
+
+    metadata = read_metadata(model_package_path)
+    run = wandb.init(
+        project=wandb_config["project"],
+        entity=wandb_config.get("entity"),
+        name="model_package",
+        job_type="model_package",
+        config={
+            "model_name": metadata["model_name"],
+            "git_sha": metadata["git_sha"],
+            "data_fingerprint": metadata["data_fingerprint"],
+        },
+        reinit="finish_previous",
+    )
+    artifact = wandb.Artifact(
+        name=package_params["artifact_name"],
+        type="model",
+        metadata=metadata,
+    )
+    artifact.add_dir(model_package_path)
+    run.log_artifact(artifact, aliases=list(package_params["aliases"]))
+    run.finish()

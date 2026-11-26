@@ -30,3 +30,5 @@ autogluon:
 # Sprint 3: pakiet modelu produkcyjnego
 model_package:
   output_dir: data/06_models/production
+  artifact_name: churn-model
+  aliases: [production]

@@ -1,8 +1,14 @@
+import pickle
+import shutil
+import tempfile
+from pathlib import Path
+
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
 from asi_project.config import get_contract, load_project_config
 from asi_project.data import make_xy, split_train_test
+from asi_project.experiments import log_wandb_run, measure_model
 from asi_project.metrics import compute_metrics
 from asi_project.model import build_baseline_pipeline
 
@@ -54,3 +60,131 @@ def evaluate_model(
     predictions = trained_model.predict(X_test)
 
     return compute_metrics(y_test, predictions)
+
+
+# --- Sprint 3: W&B, AutoGluon i porównanie modeli ------------------------------------
+
+
+def measure_baseline(trained_model: Pipeline, X_test: pd.DataFrame) -> dict:
+    """Pomiary baseline'u na kopii zapisanej jako pickle (tak jak trafia na dysk)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "model.pkl"
+        with open(path, "wb") as handle:
+            pickle.dump(trained_model, handle)
+        return measure_model("pickle", path, X_test)
+
+
+def log_baseline_run(
+    model_metrics: dict,
+    baseline_measurements: dict,
+    test_size: float,
+    random_state: int,
+    wandb_config: dict,
+) -> dict:
+    """Pierwszy run W&B: baseline LogisticRegression ze Sprintu 2 (bez zmian)."""
+    params = {
+        "model": "logistic_regression",
+        "test_size": test_size,
+        "random_state": random_state,
+    }
+    return log_wandb_run(
+        "baseline_logistic_regression",
+        params,
+        model_metrics,
+        baseline_measurements,
+        wandb_config,
+    )
+
+
+def train_autogluon(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    autogluon_params: dict,
+    experiment: dict,
+    baseline_summary: dict,
+) -> str:
+    """Trening jednej konfiguracji AutoGluona z limitem czasu; zwraca ścieżkę do modelu."""
+    from autogluon.tabular import TabularPredictor
+
+    label = autogluon_params["label"]
+    path = Path(autogluon_params["models_dir"]) / experiment["name"]
+    shutil.rmtree(path, ignore_errors=True)
+    predictor = TabularPredictor(
+        label=label,
+        problem_type="binary",
+        eval_metric=autogluon_params["eval_metric"],
+        path=str(path),
+        verbosity=1,
+    )
+    predictor.fit(
+        train_data=X_train.assign(**{label: y_train.to_numpy()}),
+        presets=experiment["presets"],
+        time_limit=experiment["time_limit"],
+        hyperparameters=experiment.get("hyperparameters"),
+        excluded_model_types=autogluon_params.get("excluded_model_types"),
+    )
+    return str(path)
+
+
+def evaluate_autogluon(model_path: str, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
+    """Te same metryki co dla baseline'u, liczone na tym samym zbiorze testowym."""
+    from autogluon.tabular import TabularPredictor
+
+    predictor = TabularPredictor.load(model_path)
+    predictions = predictor.predict(X_test)
+    return compute_metrics(y_test, predictions.astype(int))
+
+
+def measure_autogluon(model_path: str, X_test: pd.DataFrame) -> dict:
+    """Pomiary AutoGluona: rozmiar katalogu, pamięć po wczytaniu, czas predykcji."""
+    return measure_model("autogluon", model_path, X_test)
+
+
+def log_autogluon_run(
+    metrics: dict,
+    measurements: dict,
+    experiment: dict,
+    test_size: float,
+    random_state: int,
+    wandb_config: dict,
+) -> dict:
+    """Run W&B jednej konfiguracji AutoGluona."""
+    params = {
+        "model": "autogluon",
+        "presets": experiment["presets"],
+        "time_limit": experiment["time_limit"],
+        "test_size": test_size,
+        "random_state": random_state,
+    }
+    return log_wandb_run(experiment["name"], params, metrics, measurements, wandb_config)
+
+
+def build_comparison_table(*summaries: dict) -> pd.DataFrame:
+    """Tabela porównawcza modeli: metryka główna, czas predykcji, rozmiar, pamięć."""
+    columns = [
+        "model",
+        "f1",
+        "precision",
+        "recall",
+        "predict_ms_one_row",
+        "predict_ms_per_row_batch",
+        "size_mb",
+        "load_memory_mb",
+        "load_time_s",
+    ]
+    return pd.DataFrame(list(summaries))[columns]
+
+
+def log_comparison_table(model_comparison: pd.DataFrame, wandb_config: dict) -> None:
+    """Tabela porównawcza jako osobny run W&B (widok zbiorczy)."""
+    import wandb
+
+    run = wandb.init(
+        project=wandb_config["project"],
+        entity=wandb_config.get("entity"),
+        name="model_comparison",
+        job_type="comparison",
+        reinit="finish_previous",
+    )
+    run.log({"model_comparison": wandb.Table(dataframe=model_comparison)})
+    run.finish()

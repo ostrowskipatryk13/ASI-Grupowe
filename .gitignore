@@ -21,6 +21,10 @@ notebooks/teacher/
 *_teacher.ipynb
 *.solution.ipynb
 
+# --- Eksperymenty (Sprint 3): lokalne logi W&B i katalogi AutoGluona -----------
+wandb/
+AutogluonModels/
+
 # --- Python i narzędzia ------------------------------------------------------
 __pycache__/
 *.py[cod]
